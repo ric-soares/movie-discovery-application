@@ -1,27 +1,46 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.moviediscoveryapplication.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.moviediscoveryapplication.R
@@ -29,6 +48,16 @@ import com.example.moviediscoveryapplication.R
 object ProfileStrings {
     const val HELLO_TEXT = "Hello, Smith"
     const val STREAM_TEXT = "Let’s stream your favorite movie"
+    const val CIRCULAR_IMAGE_PROFILE = "circular image profile"
+}
+
+object SearchStrings {
+    const val SEARCH_PLACEHOLDER = "Search"
+    const val CLEAR_ALL_HISTORY = "Clear all history"
+    const val CLOSE_ICON = "Close icon"
+    const val SEARCH_ICON = "Search icon"
+    const val HISTORY_ICON = "History icon"
+    const val EMPTY_TEXT = ""
 }
 
 @Composable
@@ -39,6 +68,8 @@ fun HomeScreen() {
     ) {
         Column {
             ProfileSection()
+            Spacer(modifier = Modifier.size(8.dp))
+            SearchSection()
         }
     }
 }
@@ -58,7 +89,7 @@ fun ProfileSection() {
                 .clip(RoundedCornerShape(size = 180.dp))
                 .background(Color.LightGray),
             painter = painterResource(id = R.drawable.ic_profile),
-            contentDescription = "circular image profile"
+            contentDescription = ProfileStrings.CIRCULAR_IMAGE_PROFILE
         )
 
         Column {
@@ -79,6 +110,70 @@ fun ProfileSection() {
     }
 }
 
+@SuppressLint("MutableCollectionMutableState")
+@Composable
+fun SearchSection() {
+    var textState by remember { mutableStateOf("") }
+    var isActiveState by remember { mutableStateOf(false) }
+    val searchHistoryState by remember { mutableStateOf(mutableStateListOf("")) }
+
+    SearchBar(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        query = textState,
+        onQueryChange = { textState = it },
+        onSearch = {
+            searchHistoryState.add(textState)
+            isActiveState = false
+            textState = SearchStrings.EMPTY_TEXT },
+        active = isActiveState,
+        onActiveChange = { isActiveState = it },
+        placeholder = {
+            Text(text = SearchStrings.SEARCH_PLACEHOLDER)
+        },
+        trailingIcon = {
+            if (isActiveState) {
+                Icon(
+                    modifier = Modifier.clickable {
+                        if (textState.isNotEmpty()) {
+                            textState = SearchStrings.EMPTY_TEXT
+                        } else {
+                            isActiveState = false
+                        }
+                    },
+                    imageVector = Icons.Default.Close,
+                    contentDescription = SearchStrings.CLOSE_ICON
+                )
+            }
+        },
+        leadingIcon = {
+            Icon(imageVector = Icons.Default.Search, contentDescription = SearchStrings.SEARCH_ICON)
+        }
+    ) {
+        searchHistoryState.forEach {
+            if (it.isNotEmpty()) {
+                Row(modifier = Modifier.padding(all = 14.dp)) {
+                    Icon(imageVector = Icons.Default.History, contentDescription = SearchStrings.HISTORY_ICON)
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(text = it)
+                }
+            }
+        }
+        Text(
+            modifier = Modifier
+                .padding(all = 14.dp)
+                .fillMaxWidth()
+                .clickable {
+                    searchHistoryState.clear()
+                },
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Normal,
+            text = SearchStrings.CLEAR_ALL_HISTORY
+        )
+    }
+}
+
 
 @Composable
 @Preview
@@ -89,6 +184,8 @@ fun HomeScreenPreview() {
     ) {
         Column {
             ProfileSection()
+            Spacer(modifier = Modifier.size(8.dp))
+            SearchSection()
         }
     }
 }
