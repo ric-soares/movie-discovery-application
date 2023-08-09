@@ -16,8 +16,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MovieDiscoveryApplicationTheme {
-
+            MovieDiscoveryApplicationTheme(dynamicColor = false) {
+                MainScreen()
             }
         }
     }
@@ -28,6 +28,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GreetingPreview() {
     MovieDiscoveryApplicationTheme {
-
+        MainScreen()
     }
 }
