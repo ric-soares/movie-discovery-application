@@ -1,21 +1,26 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 
 package com.example.moviediscoveryapplication.screens
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -38,12 +43,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.moviediscoveryapplication.R
+import com.example.moviediscoveryapplication.mocks.moviesList
+import com.example.moviediscoveryapplication.model.CarouselItem
 
 object ProfileStrings {
     const val HELLO_TEXT = "Hello, Smith"
@@ -60,6 +69,10 @@ object SearchStrings {
     const val EMPTY_TEXT = ""
 }
 
+object CarouselItemStrings {
+    const val MOVIE_IMAGE = "Movie image"
+}
+
 @Composable
 fun HomeScreen() {
     Box(
@@ -70,6 +83,8 @@ fun HomeScreen() {
             ProfileSection()
             Spacer(modifier = Modifier.size(8.dp))
             SearchSection()
+            Spacer(modifier = Modifier.size(30.dp))
+            FeaturedMoviesCarousel(itemList = moviesList)
         }
     }
 }
@@ -174,6 +189,82 @@ fun SearchSection() {
     }
 }
 
+@Composable
+fun FeaturedMoviesCarousel(
+    itemList: List<CarouselItem>
+) {
+    val pagerState = rememberPagerState(
+        initialPage = 0,
+        initialPageOffsetFraction = 0f,
+        pageCount = { itemList.size }
+    )
+
+    Box {
+        Column {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(190.dp),
+                pageSpacing = 12.dp,
+                contentPadding = PaddingValues(horizontal = 40.dp)
+            ) { page ->
+                val selectedPage = itemList[page]
+                Box(modifier = Modifier
+                    .width(320.dp)
+                    .height(154.dp)
+                ) {
+                    CarouselCustomItem(
+                        title = selectedPage.title,
+                        release = selectedPage.release,
+                        image = selectedPage.image
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CarouselCustomItem(
+    title: String,
+    release: String,
+    image: Int
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.DarkGray),
+        contentAlignment = Alignment.BottomStart
+    ) {
+        Image(
+            painter = painterResource(id = image),
+            contentDescription = CarouselItemStrings.MOVIE_IMAGE,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = title,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            CompositionLocalProvider(LocalContentColor provides Color.LightGray) {
+                Text(
+                    text = release,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 @Preview
@@ -186,6 +277,8 @@ fun HomeScreenPreview() {
             ProfileSection()
             Spacer(modifier = Modifier.size(8.dp))
             SearchSection()
+            Spacer(modifier = Modifier.size(30.dp))
+            FeaturedMoviesCarousel(itemList = moviesList)
         }
     }
 }
