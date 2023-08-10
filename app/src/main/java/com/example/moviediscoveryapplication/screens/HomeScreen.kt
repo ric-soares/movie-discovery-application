@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -43,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import com.example.moviediscoveryapplication.R
 import com.example.moviediscoveryapplication.mocks.moviesList
 import com.example.moviediscoveryapplication.model.CarouselItem
+import kotlin.math.absoluteValue
 
 object ProfileStrings {
     const val HELLO_TEXT = "Hello, Smith"
@@ -73,6 +76,12 @@ object CarouselItemStrings {
     const val MOVIE_IMAGE = "Movie image"
 }
 
+object CarouselTransitionConstants {
+    const val MIN_SCALE_FACTOR = 0.7f
+    const val MAX_SCALE_FACTOR = 1f
+    const val SCALE_FACTOR_RANGE = MAX_SCALE_FACTOR - MIN_SCALE_FACTOR
+}
+
 @Composable
 fun HomeScreen() {
     Box(
@@ -84,7 +93,7 @@ fun HomeScreen() {
             Spacer(modifier = Modifier.size(8.dp))
             SearchSection()
             Spacer(modifier = Modifier.size(30.dp))
-            FeaturedMoviesCarousel(itemList = moviesList)
+            FeaturedMoviesCarousel(featuredMoviesList = moviesList)
         }
     }
 }
@@ -191,12 +200,12 @@ fun SearchSection() {
 
 @Composable
 fun FeaturedMoviesCarousel(
-    itemList: List<CarouselItem>
+    featuredMoviesList: List<CarouselItem>
 ) {
     val pagerState = rememberPagerState(
         initialPage = 0,
         initialPageOffsetFraction = 0f,
-        pageCount = { itemList.size }
+        pageCount = { featuredMoviesList.size }
     )
 
     Box {
@@ -206,11 +215,12 @@ fun FeaturedMoviesCarousel(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(190.dp),
-                pageSpacing = 12.dp,
+                pageSpacing = (-30).dp,
                 contentPadding = PaddingValues(horizontal = 40.dp)
             ) { page ->
-                val selectedPage = itemList[page]
+                val selectedPage = featuredMoviesList[page]
                 Box(modifier = Modifier
+                    .carouselTransition(page, pagerState)
                     .width(320.dp)
                     .height(154.dp)
                 ) {
@@ -265,6 +275,22 @@ fun CarouselCustomItem(
     }
 }
 
+fun Modifier.carouselTransition(page: Int, pagerState: PagerState): Modifier = this.then(
+    graphicsLayer {
+        val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+        val absPageOffset = pageOffset.absoluteValue
+
+        val scaleFactor =
+            CarouselTransitionConstants.MIN_SCALE_FACTOR + (CarouselTransitionConstants.SCALE_FACTOR_RANGE * (CarouselTransitionConstants.MAX_SCALE_FACTOR - absPageOffset.coerceIn(
+                0f,
+                1f
+            )))
+        alpha = scaleFactor
+        scaleX = scaleFactor
+        scaleY = scaleFactor
+    }
+)
+
 
 @Composable
 @Preview
@@ -278,7 +304,7 @@ fun HomeScreenPreview() {
             Spacer(modifier = Modifier.size(8.dp))
             SearchSection()
             Spacer(modifier = Modifier.size(30.dp))
-            FeaturedMoviesCarousel(itemList = moviesList)
+            FeaturedMoviesCarousel(featuredMoviesList = moviesList)
         }
     }
 }
