@@ -297,15 +297,33 @@ fun AutoScrollLogic(
     autoScrollDuration: Long
 ) {
     val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
+
     if (isDragged.not()) {
         with(pagerState) {
             var currentPageKey by remember { mutableIntStateOf(0) }
+            var isScrollingForward by remember { mutableStateOf(true) }
+
             LaunchedEffect(key1 = currentPageKey) {
-                launch {
+                while (true) {
                     delay(timeMillis = autoScrollDuration)
-                    val nextPage = (currentPage + 1).mod(moviesList.size)
-                    animateScrollToPage(page = nextPage)
-                    currentPageKey = nextPage
+
+                    if (isScrollingForward) {
+                        val nextPage = (currentPage + 1).mod(moviesList.size)
+                        animateScrollToPage(page = nextPage)
+                        currentPageKey = nextPage
+
+                        if (nextPage == moviesList.size - 1) {
+                            isScrollingForward = false
+                        }
+                    } else {
+                        val previousPage = (currentPage - 1 + moviesList.size).mod(moviesList.size)
+                        animateScrollToPage(page = previousPage)
+                        currentPageKey = previousPage
+
+                        if (previousPage == 0) {
+                            isScrollingForward = true
+                        }
+                    }
                 }
             }
         }
