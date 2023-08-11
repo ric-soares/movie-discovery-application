@@ -8,3 +8,7 @@ val moviesList = listOf(
     CarouselItem("Movie 2", "Release", R.drawable.ic_profile),
     CarouselItem("Movie 3", "Release", R.drawable.ic_profile)
 )
+
+val movieCategories = listOf(
+    "Action", "Comedy", "Drama", "Sci-Fi", "Horror", "Adventure"
+)

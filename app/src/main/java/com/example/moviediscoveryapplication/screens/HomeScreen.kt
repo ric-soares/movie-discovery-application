@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -56,6 +57,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moviediscoveryapplication.R
+import com.example.moviediscoveryapplication.mocks.movieCategories
 import com.example.moviediscoveryapplication.mocks.moviesList
 import com.example.moviediscoveryapplication.model.CarouselItem
 import kotlinx.coroutines.delay
@@ -87,6 +89,10 @@ object CarouselTransitionConstants {
     const val SCALE_FACTOR_RANGE = MAX_SCALE_FACTOR - MIN_SCALE_FACTOR
 }
 
+object MovieCategoriesFilterStrings {
+    const val CATEGORIES = "Categories"
+}
+
 @Composable
 fun HomeScreen() {
     Box(
@@ -99,6 +105,8 @@ fun HomeScreen() {
             SearchSection()
             Spacer(modifier = Modifier.size(30.dp))
             FeaturedMoviesCarousel(featuredMoviesList = moviesList)
+            Spacer(modifier = Modifier.size(30.dp))
+            MovieCategoriesFilter()
         }
     }
 }
@@ -375,6 +383,57 @@ fun DotIndicators(
     }
 }
 
+@Composable
+fun MovieCategoriesFilter() {
+    Column {
+        Text(
+            modifier = Modifier
+                .padding(horizontal = 24.dp),
+            text = MovieCategoriesFilterStrings.CATEGORIES,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.White
+        )
+
+        val selectedCategories = remember { mutableStateListOf<String>() }
+
+        LazyRow(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            content = {
+                items(movieCategories.size) { categoryIndex ->
+                    val category = movieCategories[categoryIndex]
+                    val isSelected = selectedCategories.contains(category)
+
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (isSelected) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.background)
+                            .clickable {
+                                if (isSelected) {
+                                    selectedCategories.remove(category)
+                                } else {
+                                    selectedCategories.add(category)
+                                }
+                            }
+                            .height(31.dp)
+                            .width(80.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = category,
+                            color = if (isSelected) Color.Cyan else Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
+        )
+    }
+}
+
 
 @Composable
 @Preview
@@ -389,6 +448,8 @@ fun HomeScreenPreview() {
             SearchSection()
             Spacer(modifier = Modifier.size(30.dp))
             FeaturedMoviesCarousel(featuredMoviesList = moviesList)
+            Spacer(modifier = Modifier.size(30.dp))
+            MovieCategoriesFilter()
         }
     }
 }
