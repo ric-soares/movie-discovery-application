@@ -231,6 +231,11 @@ fun FeaturedMoviesCarousel(
                     )
                 }
             }
+            DotIndicators(
+                pageCount = moviesList.size,
+                pagerState = pagerState,
+                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+            )
         }
     }
 }
@@ -290,6 +295,35 @@ fun Modifier.carouselTransition(page: Int, pagerState: PagerState): Modifier = t
         scaleY = scaleFactor
     }
 )
+
+@Composable
+fun DotIndicators(
+    modifier: Modifier,
+    pageCount: Int,
+    pagerState: PagerState
+) {
+    val selectedColor = Color.Cyan
+    val unselectedColor = Color.Gray
+
+    Row(modifier = modifier) {
+        repeat(pageCount) { iteration ->
+            val isSelected = pagerState.currentPage == iteration
+            val color = if (pagerState.currentPage == iteration) selectedColor else unselectedColor
+            Box(
+                modifier = Modifier
+                    .width(if (isSelected) 24.dp else 8.dp)
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(color)
+                    .padding(horizontal = 4.dp)
+            )
+
+            if (iteration < pageCount - 1) {
+                Spacer(modifier = Modifier.width(12.dp))
+            }
+        }
+    }
+}
 
 
 @Composable
