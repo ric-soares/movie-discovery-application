@@ -7,6 +7,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,7 +36,9 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +58,8 @@ import androidx.compose.ui.unit.sp
 import com.example.moviediscoveryapplication.R
 import com.example.moviediscoveryapplication.mocks.moviesList
 import com.example.moviediscoveryapplication.model.CarouselItem
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
 object ProfileStrings {
@@ -200,12 +205,18 @@ fun SearchSection() {
 
 @Composable
 fun FeaturedMoviesCarousel(
-    featuredMoviesList: List<CarouselItem>
+    featuredMoviesList: List<CarouselItem>,
+    autoScrollDuration: Long = 3000L
 ) {
     val pagerState = rememberPagerState(
         initialPage = 0,
         initialPageOffsetFraction = 0f,
         pageCount = { featuredMoviesList.size }
+    )
+
+    AutoScrollLogic(
+        pagerState = pagerState,
+        autoScrollDuration = autoScrollDuration
     )
 
     Box {
@@ -275,6 +286,27 @@ fun CarouselCustomItem(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun AutoScrollLogic(
+    pagerState: PagerState,
+    autoScrollDuration: Long
+) {
+    val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
+    if (isDragged.not()) {
+        with(pagerState) {
+            var currentPageKey by remember { mutableIntStateOf(0) }
+            LaunchedEffect(key1 = currentPageKey) {
+                launch {
+                    delay(timeMillis = autoScrollDuration)
+                    val nextPage = (currentPage + 1).mod(moviesList.size)
+                    animateScrollToPage(page = nextPage)
+                    currentPageKey = nextPage
+                }
             }
         }
     }
