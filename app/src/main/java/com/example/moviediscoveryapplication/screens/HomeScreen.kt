@@ -24,7 +24,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
@@ -59,9 +61,9 @@ import androidx.compose.ui.unit.sp
 import com.example.moviediscoveryapplication.R
 import com.example.moviediscoveryapplication.mocks.movieCategories
 import com.example.moviediscoveryapplication.mocks.moviesList
+import com.example.moviediscoveryapplication.mocks.moviesListCarousel
 import com.example.moviediscoveryapplication.model.CarouselItem
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
 object ProfileStrings {
@@ -99,14 +101,19 @@ fun HomeScreen() {
         modifier = Modifier
             .fillMaxSize()
     ) {
-        Column {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+        ) {
             ProfileSection()
             Spacer(modifier = Modifier.size(8.dp))
             SearchSection()
             Spacer(modifier = Modifier.size(30.dp))
-            FeaturedMoviesCarousel(featuredMoviesList = moviesList)
+            FeaturedMoviesCarousel(featuredMoviesList = moviesListCarousel)
             Spacer(modifier = Modifier.size(30.dp))
             MovieCategoriesFilter()
+            Spacer(modifier = Modifier.size(30.dp))
+            MostPopularSection()
         }
     }
 }
@@ -251,7 +258,7 @@ fun FeaturedMoviesCarousel(
                 }
             }
             DotIndicators(
-                pageCount = moviesList.size,
+                pageCount = moviesListCarousel.size,
                 pagerState = pagerState,
                 modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
             )
@@ -316,15 +323,16 @@ fun AutoScrollLogic(
                     delay(timeMillis = autoScrollDuration)
 
                     if (isScrollingForward) {
-                        val nextPage = (currentPage + 1).mod(moviesList.size)
+                        val nextPage = (currentPage + 1).mod(moviesListCarousel.size)
                         animateScrollToPage(page = nextPage)
                         currentPageKey = nextPage
 
-                        if (nextPage == moviesList.size - 1) {
+                        if (nextPage == moviesListCarousel.size - 1) {
                             isScrollingForward = false
                         }
                     } else {
-                        val previousPage = (currentPage - 1 + moviesList.size).mod(moviesList.size)
+                        val previousPage = (currentPage - 1 + moviesListCarousel.size).mod(
+                            moviesListCarousel.size)
                         animateScrollToPage(page = previousPage)
                         currentPageKey = previousPage
 
@@ -434,6 +442,66 @@ fun MovieCategoriesFilter() {
     }
 }
 
+@Composable
+fun MostPopularSection() {
+    Column {
+        Text(
+            modifier = Modifier
+                .padding(horizontal = 24.dp),
+            text = "Most popular",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.White
+        )
+
+        LazyRow(
+            modifier = Modifier
+                .padding(vertical = 16.dp),
+            content = {
+                items(moviesList.size) { movieIndex ->
+                    val movie = moviesList[movieIndex]
+
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 10.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.Gray)
+                            .height(231.dp)
+                            .width(135.dp),
+                        contentAlignment = Alignment.BottomStart
+                    ) {
+                        Image(
+                            painter = painterResource(id = movie.image),
+                            contentDescription = "movie image",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxSize()
+                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                        ) {
+                            Text(
+                                text = movie.title,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            CompositionLocalProvider(LocalContentColor provides Color.LightGray) {
+                                Text(
+                                    text = movie.genre,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        )
+    }
+}
+
 
 @Composable
 @Preview
@@ -447,9 +515,11 @@ fun HomeScreenPreview() {
             Spacer(modifier = Modifier.size(8.dp))
             SearchSection()
             Spacer(modifier = Modifier.size(30.dp))
-            FeaturedMoviesCarousel(featuredMoviesList = moviesList)
+            FeaturedMoviesCarousel(featuredMoviesList = moviesListCarousel)
             Spacer(modifier = Modifier.size(30.dp))
             MovieCategoriesFilter()
+            Spacer(modifier = Modifier.size(30.dp))
+            MostPopularSection()
         }
     }
 }
