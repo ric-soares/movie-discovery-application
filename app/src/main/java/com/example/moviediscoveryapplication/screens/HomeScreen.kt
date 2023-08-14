@@ -61,46 +61,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moviediscoveryapplication.R
+import com.example.moviediscoveryapplication.constants.CarouselItemStrings
+import com.example.moviediscoveryapplication.constants.CarouselTransitionConstants
+import com.example.moviediscoveryapplication.constants.MostPopularStrings
+import com.example.moviediscoveryapplication.constants.MovieCategoriesFilterStrings
+import com.example.moviediscoveryapplication.constants.ProfileStrings
+import com.example.moviediscoveryapplication.constants.SearchStrings
+import com.example.moviediscoveryapplication.constants.TopRatedStrings
 import com.example.moviediscoveryapplication.mocks.movieCategories
 import com.example.moviediscoveryapplication.mocks.moviesList
 import com.example.moviediscoveryapplication.mocks.moviesListCarousel
 import com.example.moviediscoveryapplication.model.CarouselItem
 import kotlinx.coroutines.delay
 import kotlin.math.absoluteValue
-
-object ProfileStrings {
-    const val HELLO_TEXT = "Hello, Smith"
-    const val STREAM_TEXT = "Let’s stream your favorite movie"
-    const val CIRCULAR_IMAGE_PROFILE = "circular image profile"
-}
-
-object SearchStrings {
-    const val SEARCH_PLACEHOLDER = "Search"
-    const val CLEAR_ALL_HISTORY = "Clear all history"
-    const val CLOSE_ICON = "Close icon"
-    const val SEARCH_ICON = "Search icon"
-    const val HISTORY_ICON = "History icon"
-    const val EMPTY_TEXT = ""
-}
-
-object CarouselItemStrings {
-    const val MOVIE_IMAGE = "Movie image"
-}
-
-object CarouselTransitionConstants {
-    const val MIN_SCALE_FACTOR = 0.7f
-    const val MAX_SCALE_FACTOR = 1f
-    const val SCALE_FACTOR_RANGE = MAX_SCALE_FACTOR - MIN_SCALE_FACTOR
-}
-
-object MovieCategoriesFilterStrings {
-    const val CATEGORIES = "Categories"
-}
-
-object MostPopularStrings {
-    const val MOST_POPULAR = "Most popular"
-    const val MOVIE_IMAGE = "movie image"
-}
 
 @Composable
 fun HomeScreen() {
@@ -122,6 +95,8 @@ fun HomeScreen() {
             MovieCategoriesFilter()
             Spacer(modifier = Modifier.size(30.dp))
             MostPopularSection()
+            Spacer(modifier = Modifier.size(30.dp))
+            TopRatedSection()
         }
     }
 }
@@ -510,6 +485,66 @@ fun MostPopularSection() {
     }
 }
 
+@Composable
+fun TopRatedSection() {
+    Column {
+        Text(
+            modifier = Modifier
+                .padding(horizontal = 24.dp),
+            text = TopRatedStrings.TOP_RATED,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.White
+        )
+
+        LazyRow(
+            modifier = Modifier
+                .padding(vertical = 16.dp),
+            content = {
+                items(moviesList.size) { movieIndex ->
+                    val movie = moviesList[movieIndex]
+
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 10.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.Gray)
+                            .height(231.dp)
+                            .width(135.dp),
+                        contentAlignment = Alignment.BottomStart
+                    ) {
+                        Image(
+                            painter = painterResource(id = movie.image),
+                            contentDescription = TopRatedStrings.MOVIE_IMAGE,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxSize()
+                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                        ) {
+                            Text(
+                                text = movie.title,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            CompositionLocalProvider(LocalContentColor provides Color.LightGray) {
+                                Text(
+                                    text = movie.genre,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        )
+    }
+}
+
 
 @Composable
 @Preview
@@ -528,6 +563,8 @@ fun HomeScreenPreview() {
             MovieCategoriesFilter()
             Spacer(modifier = Modifier.size(30.dp))
             MostPopularSection()
+            Spacer(modifier = Modifier.size(30.dp))
+            TopRatedSection()
         }
     }
 }
