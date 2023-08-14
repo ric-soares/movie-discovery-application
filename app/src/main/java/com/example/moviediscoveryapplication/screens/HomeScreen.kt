@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -95,15 +97,21 @@ object MovieCategoriesFilterStrings {
     const val CATEGORIES = "Categories"
 }
 
+object MostPopularStrings {
+    const val MOST_POPULAR = "Most popular"
+    const val MOVIE_IMAGE = "movie image"
+}
+
 @Composable
 fun HomeScreen() {
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
     ) {
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
+                .heightIn(max = constraints.maxHeight.dp)
         ) {
             ProfileSection()
             Spacer(modifier = Modifier.size(8.dp))
@@ -448,7 +456,7 @@ fun MostPopularSection() {
         Text(
             modifier = Modifier
                 .padding(horizontal = 24.dp),
-            text = "Most popular",
+            text = MostPopularStrings.MOST_POPULAR,
             fontSize = 18.sp,
             fontWeight = FontWeight.SemiBold,
             color = Color.White
@@ -472,7 +480,7 @@ fun MostPopularSection() {
                     ) {
                         Image(
                             painter = painterResource(id = movie.image),
-                            contentDescription = "movie image",
+                            contentDescription = MostPopularStrings.MOVIE_IMAGE,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .fillMaxSize()
