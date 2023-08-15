@@ -1,4 +1,4 @@
-package com.example.moviediscoveryapplication.constants
+package com.example.moviediscoveryapplication.utils.constants
 
 object ProfileStrings {
     const val HELLO_TEXT = "Hello, Smith"

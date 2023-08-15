@@ -1,4 +1,4 @@
-package com.example.moviediscoveryapplication.mocks
+package com.example.moviediscoveryapplication.utils.mocks
 
 import com.example.moviediscoveryapplication.R
 import com.example.moviediscoveryapplication.model.CarouselItem

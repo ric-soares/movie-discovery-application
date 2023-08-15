@@ -62,25 +62,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moviediscoveryapplication.R
-import com.example.moviediscoveryapplication.constants.CarouselItemStrings
-import com.example.moviediscoveryapplication.constants.CarouselTransitionConstants
-import com.example.moviediscoveryapplication.constants.MostPopularStrings
-import com.example.moviediscoveryapplication.constants.MovieCategoriesFilterStrings
-import com.example.moviediscoveryapplication.constants.ProfileStrings
-import com.example.moviediscoveryapplication.constants.SearchStrings
-import com.example.moviediscoveryapplication.constants.TopRatedStrings
-import com.example.moviediscoveryapplication.mocks.movieCategories
-import com.example.moviediscoveryapplication.mocks.moviesList
-import com.example.moviediscoveryapplication.mocks.moviesListCarousel
+import com.example.moviediscoveryapplication.utils.constants.CarouselItemStrings
+import com.example.moviediscoveryapplication.utils.constants.CarouselTransitionConstants
+import com.example.moviediscoveryapplication.utils.constants.MostPopularStrings
+import com.example.moviediscoveryapplication.utils.constants.MovieCategoriesFilterStrings
+import com.example.moviediscoveryapplication.utils.constants.ProfileStrings
+import com.example.moviediscoveryapplication.utils.constants.SearchStrings
+import com.example.moviediscoveryapplication.utils.constants.TopRatedStrings
+import com.example.moviediscoveryapplication.utils.mocks.movieCategories
+import com.example.moviediscoveryapplication.utils.mocks.moviesList
+import com.example.moviediscoveryapplication.utils.mocks.moviesListCarousel
 import com.example.moviediscoveryapplication.model.CarouselItem
 import com.example.moviediscoveryapplication.viewmodel.HomeScreenViewModel
 import kotlinx.coroutines.delay
+import org.koin.androidx.compose.getViewModel
+import org.koin.androidx.compose.koinViewModel
 import kotlin.math.absoluteValue
 
 @Composable
 fun HomeScreen() {
 
-    val viewModel: HomeScreenViewModel = viewModel()
+    val viewModel: HomeScreenViewModel = getViewModel()
+    viewModel.loadPopularMoviesList()
 
     BoxWithConstraints(
         modifier = Modifier
