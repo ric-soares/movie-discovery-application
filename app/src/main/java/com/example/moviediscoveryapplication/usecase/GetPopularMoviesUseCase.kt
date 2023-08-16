@@ -5,8 +5,9 @@ import com.example.moviediscoveryapplication.model.MostPopularMoviesItem
 import com.example.moviediscoveryapplication.repository.TheMovieDbRepository
 import com.example.moviediscoveryapplication.common.result.Result
 import retrofit2.HttpException
+import javax.inject.Inject
 
-class GetPopularMoviesUseCase(
+class GetPopularMoviesUseCase @Inject constructor(
     private val repository: TheMovieDbRepository
 ) {
     suspend fun invoke(): Result<ArrayList<MostPopularMoviesItem>> = try {

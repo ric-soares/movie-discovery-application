@@ -60,7 +60,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moviediscoveryapplication.R
 import com.example.moviediscoveryapplication.utils.constants.CarouselItemStrings
 import com.example.moviediscoveryapplication.utils.constants.CarouselTransitionConstants
@@ -75,14 +74,11 @@ import com.example.moviediscoveryapplication.utils.mocks.moviesListCarousel
 import com.example.moviediscoveryapplication.model.CarouselItem
 import com.example.moviediscoveryapplication.viewmodel.HomeScreenViewModel
 import kotlinx.coroutines.delay
-import org.koin.androidx.compose.getViewModel
-import org.koin.androidx.compose.koinViewModel
 import kotlin.math.absoluteValue
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(viewModel: HomeScreenViewModel) {
 
-    val viewModel: HomeScreenViewModel = getViewModel()
     viewModel.loadPopularMoviesList()
 
     BoxWithConstraints(

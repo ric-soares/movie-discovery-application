@@ -8,9 +8,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.moviediscoveryapplication.common.result.Result
 import com.example.moviediscoveryapplication.model.MostPopularMoviesItem
 import com.example.moviediscoveryapplication.usecase.GetPopularMoviesUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class HomeScreenViewModel(
+@HiltViewModel
+class HomeScreenViewModel @Inject constructor(
     private val getPopularMoviesUseCase: GetPopularMoviesUseCase
 ) : ViewModel() {
 

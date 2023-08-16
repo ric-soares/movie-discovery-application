@@ -11,6 +11,9 @@ import java.util.concurrent.TimeUnit
 class ApiClient {
     private lateinit var retrofit: Retrofit
 
+    // interceptor: monitor, modify and retry api calls.
+    // An Interceptor is a mechanism in Retrofit that allows you to intercept and manipulate network requests and responses.
+
     private val requestInterceptor = Interceptor { chain ->
         // builds a modified URL by adding the api_key as a query parameter.
         val url = chain.request()
@@ -37,7 +40,7 @@ class ApiClient {
 
     // returns a configured instance of Retrofit by setting the base url, the client and the deserializer.
     fun getClient(): Retrofit {
-        retrofit.newBuilder()
+        retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
@@ -46,6 +49,3 @@ class ApiClient {
         return retrofit
     }
 }
-
-// interceptor: monitor, modify and retry api calls.
-// An Interceptor is a mechanism in Retrofit that allows you to intercept and manipulate network requests and responses.

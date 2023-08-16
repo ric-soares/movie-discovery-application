@@ -5,8 +5,8 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface TheMovieDbService {
-    @GET("movies/popular")
-    fun getPopularMovies(
+    @GET("movie/popular")
+    suspend fun getPopularMovies(
         @Query("page") page: Int
     ): MostPopularMoviesResponse
 }
