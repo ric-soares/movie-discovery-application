@@ -16,9 +16,8 @@ fun BottomNavGraph(navController: NavHostController) {
         navController = navController,
         startDestination = BottomBarScreen.Home.route
     ) {
-        composable(route = BottomBarScreen.Home.route) { navBackStackEntry ->
-            val viewModel = hiltViewModel<HomeScreenViewModel>()
-            HomeScreen(viewModel)
+        composable(route = BottomBarScreen.Home.route) {
+            HomeScreen()
         }
         composable(route = BottomBarScreen.LikedMovies.route) {
             LikedMoviesScreen()

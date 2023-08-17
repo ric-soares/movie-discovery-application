@@ -60,6 +60,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.moviediscoveryapplication.R
 import com.example.moviediscoveryapplication.utils.constants.CarouselItemStrings
 import com.example.moviediscoveryapplication.utils.constants.CarouselTransitionConstants
@@ -77,7 +78,9 @@ import kotlinx.coroutines.delay
 import kotlin.math.absoluteValue
 
 @Composable
-fun HomeScreen(viewModel: HomeScreenViewModel) {
+fun HomeScreen() {
+
+    val viewModel: HomeScreenViewModel = hiltViewModel()
 
     viewModel.loadPopularMoviesList()
 

@@ -16,14 +16,8 @@ import javax.inject.Singleton
 object AppModule {
     @Provides
     @Singleton
-    fun provideApiClient(): ApiClient {
-        return ApiClient()
-    }
-
-    @Provides
-    @Singleton
     fun provideTheMovieDbService(apiClient: ApiClient): TheMovieDbService {
-        return apiClient.getClient().create(TheMovieDbService::class.java)
+        return apiClient.retrofit.create(TheMovieDbService::class.java)
     }
 
     @Provides
