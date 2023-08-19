@@ -34,7 +34,7 @@ class HomeScreenViewModel @Inject constructor(
             _isPopularMoviesListLoading.value = true
             when (val result = getPopularMoviesUseCase.invoke()) {
                 is Result.Success -> {
-                    val moviesList = result.result
+                    val moviesList = result.data
                     _popularMoviesList.value = moviesList
                 }
                 is Result.Failure -> {
@@ -51,7 +51,7 @@ class HomeScreenViewModel @Inject constructor(
         viewModelScope.launch {
             when (val result = getGenresListUseCase.invoke()) {
                 is Result.Success -> {
-                    val genresList = result.result
+                    val genresList = result.data
                     _genresList.value = genresList
                 }
                 is Result.Failure -> {
