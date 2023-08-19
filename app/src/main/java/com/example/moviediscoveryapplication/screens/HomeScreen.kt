@@ -78,7 +78,6 @@ import com.example.moviediscoveryapplication.utils.constants.SearchStrings
 import com.example.moviediscoveryapplication.utils.constants.TopRatedStrings
 import com.example.moviediscoveryapplication.model.CarouselItem
 import com.example.moviediscoveryapplication.utils.constants.NetworkConstants
-import com.example.moviediscoveryapplication.utils.mocks.movieCategoriesMock
 import com.example.moviediscoveryapplication.utils.mocks.moviesListCarouselMock
 import com.example.moviediscoveryapplication.utils.mocks.moviesListMock
 import com.example.moviediscoveryapplication.viewmodel.HomeScreenViewModel
@@ -107,7 +106,7 @@ fun HomeScreen() {
             Spacer(modifier = Modifier.size(30.dp))
             FeaturedMoviesCarousel(featuredMoviesList = moviesListCarouselMock)
             Spacer(modifier = Modifier.size(30.dp))
-            MovieCategoriesFilter()
+            MovieCategoriesFilter(viewModel)
             Spacer(modifier = Modifier.size(30.dp))
             MostPopularSection(viewModel)
             Spacer(modifier = Modifier.size(30.dp))
@@ -390,7 +389,9 @@ fun DotIndicators(
 }
 
 @Composable
-fun MovieCategoriesFilter() {
+fun MovieCategoriesFilter(viewModel: HomeScreenViewModel) {
+    val genresList by viewModel.genresList.observeAsState()
+
     Column {
         Text(
             modifier = Modifier
@@ -407,8 +408,8 @@ fun MovieCategoriesFilter() {
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             content = {
-                items(movieCategoriesMock.size) { categoryIndex ->
-                    val category = movieCategoriesMock[categoryIndex]
+                items(genresList?.size ?: 0) { categoryIndex ->
+                    val category = genresList?.get(categoryIndex)?.name
                     val isSelected = selectedCategories.contains(category)
 
                     Box(
@@ -420,7 +421,7 @@ fun MovieCategoriesFilter() {
                                 if (isSelected) {
                                     selectedCategories.remove(category)
                                 } else {
-                                    selectedCategories.add(category)
+                                    selectedCategories.add(category.orEmpty())
                                 }
                             }
                             .height(31.dp)
@@ -428,10 +429,12 @@ fun MovieCategoriesFilter() {
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = category,
+                            text = category.orEmpty(),
                             color = if (isSelected) Color.Cyan else Color.White,
                             fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 12.sp
                         )
                     }
                 }
@@ -596,7 +599,7 @@ fun HomeScreenPreview() {
             Spacer(modifier = Modifier.size(30.dp))
             FeaturedMoviesCarousel(featuredMoviesList = moviesListCarouselMock)
             Spacer(modifier = Modifier.size(30.dp))
-            MovieCategoriesFilter()
+            MovieCategoriesFilter(viewModel)
             Spacer(modifier = Modifier.size(30.dp))
             MostPopularSection(viewModel)
             Spacer(modifier = Modifier.size(30.dp))
