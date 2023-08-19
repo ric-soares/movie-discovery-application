@@ -1,4 +1,6 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalCoilApi::class
+)
 
 package com.example.moviediscoveryapplication.screens
 
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -43,6 +46,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -57,10 +61,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.rememberImagePainter
 import com.example.moviediscoveryapplication.R
 import com.example.moviediscoveryapplication.utils.constants.CarouselItemStrings
 import com.example.moviediscoveryapplication.utils.constants.CarouselTransitionConstants
@@ -69,10 +76,11 @@ import com.example.moviediscoveryapplication.utils.constants.MovieCategoriesFilt
 import com.example.moviediscoveryapplication.utils.constants.ProfileStrings
 import com.example.moviediscoveryapplication.utils.constants.SearchStrings
 import com.example.moviediscoveryapplication.utils.constants.TopRatedStrings
-import com.example.moviediscoveryapplication.utils.mocks.movieCategories
-import com.example.moviediscoveryapplication.utils.mocks.moviesList
-import com.example.moviediscoveryapplication.utils.mocks.moviesListCarousel
 import com.example.moviediscoveryapplication.model.CarouselItem
+import com.example.moviediscoveryapplication.utils.constants.NetworkConstants
+import com.example.moviediscoveryapplication.utils.mocks.movieCategoriesMock
+import com.example.moviediscoveryapplication.utils.mocks.moviesListCarouselMock
+import com.example.moviediscoveryapplication.utils.mocks.moviesListMock
 import com.example.moviediscoveryapplication.viewmodel.HomeScreenViewModel
 import kotlinx.coroutines.delay
 import kotlin.math.absoluteValue
@@ -81,8 +89,8 @@ import kotlin.math.absoluteValue
 fun HomeScreen() {
 
     val viewModel: HomeScreenViewModel = hiltViewModel()
-
     viewModel.loadPopularMoviesList()
+    viewModel.loadGenresList()
 
     BoxWithConstraints(
         modifier = Modifier
@@ -97,11 +105,11 @@ fun HomeScreen() {
             Spacer(modifier = Modifier.size(8.dp))
             SearchSection()
             Spacer(modifier = Modifier.size(30.dp))
-            FeaturedMoviesCarousel(featuredMoviesList = moviesListCarousel)
+            FeaturedMoviesCarousel(featuredMoviesList = moviesListCarouselMock)
             Spacer(modifier = Modifier.size(30.dp))
             MovieCategoriesFilter()
             Spacer(modifier = Modifier.size(30.dp))
-            MostPopularSection()
+            MostPopularSection(viewModel)
             Spacer(modifier = Modifier.size(30.dp))
             TopRatedSection()
         }
@@ -248,7 +256,7 @@ fun FeaturedMoviesCarousel(
                 }
             }
             DotIndicators(
-                pageCount = moviesListCarousel.size,
+                pageCount = moviesListCarouselMock.size,
                 pagerState = pagerState,
                 modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
             )
@@ -313,16 +321,16 @@ fun AutoScrollLogic(
                     delay(timeMillis = autoScrollDuration)
 
                     if (isScrollingForward) {
-                        val nextPage = (currentPage + 1).mod(moviesListCarousel.size)
+                        val nextPage = (currentPage + 1).mod(moviesListCarouselMock.size)
                         animateScrollToPage(page = nextPage)
                         currentPageKey = nextPage
 
-                        if (nextPage == moviesListCarousel.size - 1) {
+                        if (nextPage == moviesListCarouselMock.size - 1) {
                             isScrollingForward = false
                         }
                     } else {
-                        val previousPage = (currentPage - 1 + moviesListCarousel.size).mod(
-                            moviesListCarousel.size)
+                        val previousPage = (currentPage - 1 + moviesListCarouselMock.size).mod(
+                            moviesListCarouselMock.size)
                         animateScrollToPage(page = previousPage)
                         currentPageKey = previousPage
 
@@ -399,8 +407,8 @@ fun MovieCategoriesFilter() {
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             content = {
-                items(movieCategories.size) { categoryIndex ->
-                    val category = movieCategories[categoryIndex]
+                items(movieCategoriesMock.size) { categoryIndex ->
+                    val category = movieCategoriesMock[categoryIndex]
                     val isSelected = selectedCategories.contains(category)
 
                     Box(
@@ -433,7 +441,13 @@ fun MovieCategoriesFilter() {
 }
 
 @Composable
-fun MostPopularSection() {
+fun MostPopularSection(viewModel: HomeScreenViewModel) {
+    val moviesList by viewModel.popularMoviesList.observeAsState(initial = emptyList())
+    val genresList by viewModel.genresList.observeAsState()
+    val genresMap = genresList?.associateBy {
+        it.id
+    }
+
     Column {
         Text(
             modifier = Modifier
@@ -450,6 +464,9 @@ fun MostPopularSection() {
             content = {
                 items(moviesList.size) { movieIndex ->
                     val movie = moviesList[movieIndex]
+                    val genreNames = movie.genreIds.take(2).mapNotNull {
+                        genresMap?.get(it)?.name
+                    }
 
                     Box(
                         modifier = Modifier
@@ -457,31 +474,38 @@ fun MostPopularSection() {
                             .clip(RoundedCornerShape(12.dp))
                             .background(Color.Gray)
                             .height(231.dp)
-                            .width(135.dp),
-                        contentAlignment = Alignment.BottomStart
+                            .width(135.dp)
                     ) {
                         Image(
-                            painter = painterResource(id = movie.image),
+                            painter = rememberImagePainter(data = "${NetworkConstants.POSTER_BASE_URL}${movie.posterPath}"),
                             contentDescription = MostPopularStrings.MOVIE_IMAGE,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .fillMaxSize()
+                                .fillMaxHeight(0.82f)
+                                .fillMaxWidth()
                         )
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp)
+                                .align(Alignment.BottomStart)
+                                .padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
                         ) {
                             Text(
                                 text = movie.title,
                                 fontSize = 14.sp,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                lineHeight = 14.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                             CompositionLocalProvider(LocalContentColor provides Color.LightGray) {
                                 Text(
-                                    text = movie.genre,
+                                    text = genreNames.joinToString(MostPopularStrings.COMMA_SEPARATOR),
                                     fontSize = 10.sp,
-                                    fontWeight = FontWeight.Medium
+                                    fontWeight = FontWeight.Medium,
+                                    lineHeight = 10.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
@@ -508,8 +532,8 @@ fun TopRatedSection() {
             modifier = Modifier
                 .padding(vertical = 16.dp),
             content = {
-                items(moviesList.size) { movieIndex ->
-                    val movie = moviesList[movieIndex]
+                items(moviesListMock.size) { movieIndex ->
+                    val movie = moviesListMock[movieIndex]
 
                     Box(
                         modifier = Modifier
@@ -556,6 +580,11 @@ fun TopRatedSection() {
 @Composable
 @Preview
 fun HomeScreenPreview() {
+
+    val viewModel: HomeScreenViewModel = hiltViewModel()
+    viewModel.loadPopularMoviesList()
+    viewModel.loadGenresList()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -565,11 +594,11 @@ fun HomeScreenPreview() {
             Spacer(modifier = Modifier.size(8.dp))
             SearchSection()
             Spacer(modifier = Modifier.size(30.dp))
-            FeaturedMoviesCarousel(featuredMoviesList = moviesListCarousel)
+            FeaturedMoviesCarousel(featuredMoviesList = moviesListCarouselMock)
             Spacer(modifier = Modifier.size(30.dp))
             MovieCategoriesFilter()
             Spacer(modifier = Modifier.size(30.dp))
-            MostPopularSection()
+            MostPopularSection(viewModel)
             Spacer(modifier = Modifier.size(30.dp))
             TopRatedSection()
         }

@@ -32,6 +32,7 @@ object MovieCategoriesFilterStrings {
 object MostPopularStrings {
     const val MOST_POPULAR = "Most popular"
     const val MOVIE_IMAGE = "movie image"
+    const val COMMA_SEPARATOR = ", "
 }
 
 object TopRatedStrings {
