@@ -7,9 +7,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moviediscoveryapplication.common.result.Result
 import com.example.moviediscoveryapplication.model.GenreItem
-import com.example.moviediscoveryapplication.model.MostPopularMoviesItem
+import com.example.moviediscoveryapplication.model.MovieItem
 import com.example.moviediscoveryapplication.usecase.GetGenresListUseCase
 import com.example.moviediscoveryapplication.usecase.GetPopularMoviesUseCase
+import com.example.moviediscoveryapplication.usecase.GetTopRatedMoviesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,17 +18,21 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(
     private val getPopularMoviesUseCase: GetPopularMoviesUseCase,
-    private val getGenresListUseCase: GetGenresListUseCase
+    private val getGenresListUseCase: GetGenresListUseCase,
+    private val getTopRatedMoviesList: GetTopRatedMoviesUseCase
 ) : ViewModel() {
 
-    private val _popularMoviesList: MutableLiveData<ArrayList<MostPopularMoviesItem>> = MutableLiveData()
-    val popularMoviesList: LiveData<ArrayList<MostPopularMoviesItem>> = _popularMoviesList
+    private val _popularMoviesList: MutableLiveData<ArrayList<MovieItem>> = MutableLiveData()
+    val popularMoviesList: LiveData<ArrayList<MovieItem>> = _popularMoviesList
 
     private val _isPopularMoviesListLoading: MutableLiveData<Boolean> = MutableLiveData()
     val isPopularMoviesListLoading: LiveData<Boolean> = _isPopularMoviesListLoading
 
     private val _genresList: MutableLiveData<ArrayList<GenreItem>> = MutableLiveData()
     val genresList: LiveData<ArrayList<GenreItem>> = _genresList
+
+    private val _topRatedMoviesList: MutableLiveData<ArrayList<MovieItem>> = MutableLiveData()
+    val topRatedMoviesList: LiveData<ArrayList<MovieItem>> = _topRatedMoviesList
 
     fun loadPopularMoviesList() {
         viewModelScope.launch {
@@ -62,4 +67,21 @@ class HomeScreenViewModel @Inject constructor(
             }
         }
     }
+
+    fun loadTopRatedMoviesList() {
+        viewModelScope.launch {
+            when (val result = getTopRatedMoviesList.invoke()) {
+                is Result.Success -> {
+                    val moviesList = result.data
+                    _topRatedMoviesList.value = moviesList
+                }
+                is Result.Failure -> {
+                    val errorCode = result.errorCode
+                    val errorMessage = result.throwable.message
+                    Log.d(errorCode.toString(), errorMessage.toString())
+                }
+            }
+        }
+    }
+
 }

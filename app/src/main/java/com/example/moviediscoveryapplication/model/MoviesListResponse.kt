@@ -3,16 +3,16 @@ package com.example.moviediscoveryapplication.model
 import com.google.gson.annotations.SerializedName
 import java.util.ArrayList
 
-data class MostPopularMoviesResponse(
+data class MoviesListResponse(
     val page: Int,
-    val results: ArrayList<MostPopularMoviesItem>,
+    val results: ArrayList<MovieItem>,
     @SerializedName("total_pages")
     val totalPages: Int,
     @SerializedName("total_results")
     val totalResults: Int
 )
 
-data class MostPopularMoviesItem(
+data class MovieItem(
     val adult: Boolean,
     @SerializedName("backdrop_path")
     val backdropPath: String,

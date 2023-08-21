@@ -90,6 +90,7 @@ fun HomeScreen() {
     val viewModel: HomeScreenViewModel = hiltViewModel()
     viewModel.loadPopularMoviesList()
     viewModel.loadGenresList()
+    viewModel.loadTopRatedMoviesList()
 
     BoxWithConstraints(
         modifier = Modifier
@@ -110,7 +111,7 @@ fun HomeScreen() {
             Spacer(modifier = Modifier.size(30.dp))
             MostPopularSection(viewModel)
             Spacer(modifier = Modifier.size(30.dp))
-            TopRatedSection()
+            TopRatedSection(viewModel)
         }
     }
 }
@@ -520,7 +521,13 @@ fun MostPopularSection(viewModel: HomeScreenViewModel) {
 }
 
 @Composable
-fun TopRatedSection() {
+fun TopRatedSection(viewModel: HomeScreenViewModel) {
+    val moviesList by viewModel.topRatedMoviesList.observeAsState(initial = emptyList())
+    val genresList by viewModel.genresList.observeAsState()
+    val genresMap = genresList?.associateBy {
+        it.id
+    }
+
     Column {
         Text(
             modifier = Modifier
@@ -535,8 +542,11 @@ fun TopRatedSection() {
             modifier = Modifier
                 .padding(vertical = 16.dp),
             content = {
-                items(moviesListMock.size) { movieIndex ->
-                    val movie = moviesListMock[movieIndex]
+                items(moviesList.size) { movieIndex ->
+                    val movie = moviesList[movieIndex]
+                    val genreNames = movie.genreIds.take(2).mapNotNull {
+                        genresMap?.get(it)?.name
+                    }
 
                     Box(
                         modifier = Modifier
@@ -544,31 +554,38 @@ fun TopRatedSection() {
                             .clip(RoundedCornerShape(12.dp))
                             .background(Color.Gray)
                             .height(231.dp)
-                            .width(135.dp),
-                        contentAlignment = Alignment.BottomStart
+                            .width(135.dp)
                     ) {
                         Image(
-                            painter = painterResource(id = movie.image),
+                            painter = rememberImagePainter(data = "${NetworkConstants.POSTER_BASE_URL}${movie.posterPath}"),
                             contentDescription = TopRatedStrings.MOVIE_IMAGE,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .fillMaxSize()
+                                .fillMaxHeight(0.82f)
+                                .fillMaxWidth()
                         )
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp)
+                                .align(Alignment.BottomStart)
+                                .padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
                         ) {
                             Text(
                                 text = movie.title,
                                 fontSize = 14.sp,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                lineHeight = 14.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                             CompositionLocalProvider(LocalContentColor provides Color.LightGray) {
                                 Text(
-                                    text = movie.genre,
+                                    text = genreNames.joinToString(MostPopularStrings.COMMA_SEPARATOR),
                                     fontSize = 10.sp,
-                                    fontWeight = FontWeight.Medium
+                                    fontWeight = FontWeight.Medium,
+                                    lineHeight = 10.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
@@ -578,6 +595,69 @@ fun TopRatedSection() {
         )
     }
 }
+
+
+
+
+//@Composable
+//fun TopRatedSection(viewModel: HomeScreenViewModel) {
+//    Column {
+//        Text(
+//            modifier = Modifier
+//                .padding(horizontal = 24.dp),
+//            text = TopRatedStrings.TOP_RATED,
+//            fontSize = 18.sp,
+//            fontWeight = FontWeight.SemiBold,
+//            color = Color.White
+//        )
+//
+//        LazyRow(
+//            modifier = Modifier
+//                .padding(vertical = 16.dp),
+//            content = {
+//                items(moviesListMock.size) { movieIndex ->
+//                    val movie = moviesListMock[movieIndex]
+//
+//                    Box(
+//                        modifier = Modifier
+//                            .padding(horizontal = 10.dp)
+//                            .clip(RoundedCornerShape(12.dp))
+//                            .background(Color.Gray)
+//                            .height(231.dp)
+//                            .width(135.dp),
+//                        contentAlignment = Alignment.BottomStart
+//                    ) {
+//                        Image(
+//                            painter = painterResource(id = movie.image),
+//                            contentDescription = TopRatedStrings.MOVIE_IMAGE,
+//                            contentScale = ContentScale.Crop,
+//                            modifier = Modifier
+//                                .fillMaxSize()
+//                        )
+//                        Column(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .padding(8.dp)
+//                        ) {
+//                            Text(
+//                                text = movie.title,
+//                                fontSize = 14.sp,
+//                                fontWeight = FontWeight.SemiBold
+//                            )
+//                            CompositionLocalProvider(LocalContentColor provides Color.LightGray) {
+//                                Text(
+//                                    text = movie.genre,
+//                                    fontSize = 10.sp,
+//                                    fontWeight = FontWeight.Medium
+//                                )
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        )
+//    }
+//}
 
 
 @Composable
@@ -603,7 +683,7 @@ fun HomeScreenPreview() {
             Spacer(modifier = Modifier.size(30.dp))
             MostPopularSection(viewModel)
             Spacer(modifier = Modifier.size(30.dp))
-            TopRatedSection()
+            TopRatedSection(viewModel)
         }
     }
 }
