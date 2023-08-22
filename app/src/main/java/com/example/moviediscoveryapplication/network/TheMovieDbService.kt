@@ -18,4 +18,9 @@ interface TheMovieDbService {
     suspend fun getTopRatedMovies(
         @Query("page") page: Int
     ): MoviesListResponse
+
+    @GET("movie/now_playing")
+    suspend fun getFeaturedMovies(
+        @Query("page") page: Int
+    ): MoviesListResponse
 }

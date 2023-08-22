@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.moviediscoveryapplication.common.result.Result
 import com.example.moviediscoveryapplication.model.GenreItem
 import com.example.moviediscoveryapplication.model.MovieItem
+import com.example.moviediscoveryapplication.usecase.GetFeaturedMoviesUseCase
 import com.example.moviediscoveryapplication.usecase.GetGenresListUseCase
 import com.example.moviediscoveryapplication.usecase.GetPopularMoviesUseCase
 import com.example.moviediscoveryapplication.usecase.GetTopRatedMoviesUseCase
@@ -19,7 +20,8 @@ import javax.inject.Inject
 class HomeScreenViewModel @Inject constructor(
     private val getPopularMoviesUseCase: GetPopularMoviesUseCase,
     private val getGenresListUseCase: GetGenresListUseCase,
-    private val getTopRatedMoviesList: GetTopRatedMoviesUseCase
+    private val getTopRatedMoviesList: GetTopRatedMoviesUseCase,
+    private val getFeaturedMoviesUseCase: GetFeaturedMoviesUseCase
 ) : ViewModel() {
 
     private val _popularMoviesList: MutableLiveData<ArrayList<MovieItem>> = MutableLiveData()
@@ -33,6 +35,9 @@ class HomeScreenViewModel @Inject constructor(
 
     private val _topRatedMoviesList: MutableLiveData<ArrayList<MovieItem>> = MutableLiveData()
     val topRatedMoviesList: LiveData<ArrayList<MovieItem>> = _topRatedMoviesList
+
+    private val _featuredMoviesList: MutableLiveData<ArrayList<MovieItem>> = MutableLiveData()
+    val featuredMoviesList: LiveData<ArrayList<MovieItem>> = _featuredMoviesList
 
     fun loadPopularMoviesList() {
         viewModelScope.launch {
@@ -74,6 +79,22 @@ class HomeScreenViewModel @Inject constructor(
                 is Result.Success -> {
                     val moviesList = result.data
                     _topRatedMoviesList.value = moviesList
+                }
+                is Result.Failure -> {
+                    val errorCode = result.errorCode
+                    val errorMessage = result.throwable.message
+                    Log.d(errorCode.toString(), errorMessage.toString())
+                }
+            }
+        }
+    }
+
+    fun loadFeaturedMoviesList() {
+        viewModelScope.launch {
+            when (val result = getFeaturedMoviesUseCase.invoke()) {
+                is Result.Success -> {
+                    val moviesList = result.data
+                    _featuredMoviesList.value = moviesList
                 }
                 is Result.Failure -> {
                     val errorCode = result.errorCode

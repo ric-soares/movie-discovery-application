@@ -45,4 +45,15 @@ class TheMovieDbRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getFeaturedMovies(): Result<MoviesListResponse> {
+        return try {
+            val response = service.getFeaturedMovies(1)
+            Result.Success(response)
+        } catch (error: HttpException) {
+            Result.Failure(NetworkExceptions.fromHttpException(error))
+        } catch (error: Exception) {
+            Result.Failure(Exception("cause: ${error.cause} -> message: ${error.message}"))
+        }
+    }
+
 }

@@ -15,8 +15,13 @@ object SearchStrings {
     const val EMPTY_TEXT = ""
 }
 
+object FeaturedMoviesCarouselStrings {
+    const val FEATURED_MOVIES = "Featured Movies"
+}
+
 object CarouselItemStrings {
     const val MOVIE_IMAGE = "Movie image"
+    const val RELEASE_DATE = "Release date: "
 }
 
 object CarouselTransitionConstants {

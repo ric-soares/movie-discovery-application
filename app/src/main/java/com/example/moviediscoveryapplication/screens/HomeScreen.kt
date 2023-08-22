@@ -69,17 +69,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.moviediscoveryapplication.R
+import com.example.moviediscoveryapplication.common.extensions.formatReleaseDate
 import com.example.moviediscoveryapplication.utils.constants.CarouselItemStrings
 import com.example.moviediscoveryapplication.utils.constants.CarouselTransitionConstants
+import com.example.moviediscoveryapplication.utils.constants.FeaturedMoviesCarouselStrings
 import com.example.moviediscoveryapplication.utils.constants.MostPopularStrings
 import com.example.moviediscoveryapplication.utils.constants.MovieCategoriesFilterStrings
 import com.example.moviediscoveryapplication.utils.constants.ProfileStrings
 import com.example.moviediscoveryapplication.utils.constants.SearchStrings
 import com.example.moviediscoveryapplication.utils.constants.TopRatedStrings
-import com.example.moviediscoveryapplication.model.CarouselItem
 import com.example.moviediscoveryapplication.utils.constants.NetworkConstants
-import com.example.moviediscoveryapplication.utils.mocks.moviesListCarouselMock
-import com.example.moviediscoveryapplication.utils.mocks.moviesListMock
 import com.example.moviediscoveryapplication.viewmodel.HomeScreenViewModel
 import kotlinx.coroutines.delay
 import kotlin.math.absoluteValue
@@ -91,6 +90,7 @@ fun HomeScreen() {
     viewModel.loadPopularMoviesList()
     viewModel.loadGenresList()
     viewModel.loadTopRatedMoviesList()
+    viewModel.loadFeaturedMoviesList()
 
     BoxWithConstraints(
         modifier = Modifier
@@ -105,7 +105,7 @@ fun HomeScreen() {
             Spacer(modifier = Modifier.size(8.dp))
             SearchSection()
             Spacer(modifier = Modifier.size(30.dp))
-            FeaturedMoviesCarousel(featuredMoviesList = moviesListCarouselMock)
+            FeaturedMoviesCarousel(viewModel)
             Spacer(modifier = Modifier.size(30.dp))
             MovieCategoriesFilter(viewModel)
             Spacer(modifier = Modifier.size(30.dp))
@@ -218,45 +218,66 @@ fun SearchSection() {
 
 @Composable
 fun FeaturedMoviesCarousel(
-    featuredMoviesList: List<CarouselItem>,
+    viewModel: HomeScreenViewModel,
     autoScrollDuration: Long = 3000L
 ) {
+    val moviesList by viewModel.featuredMoviesList.observeAsState()
+
     val pagerState = rememberPagerState(
         initialPage = 0,
         initialPageOffsetFraction = 0f,
-        pageCount = { featuredMoviesList.size }
+        pageCount = { moviesList?.size ?: 0 }
     )
 
     AutoScrollLogic(
+        viewModel = viewModel,
         pagerState = pagerState,
         autoScrollDuration = autoScrollDuration
     )
 
     Box {
-        Column {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                modifier = Modifier
+                    .padding(horizontal = 24.dp),
+                text = FeaturedMoviesCarouselStrings.FEATURED_MOVIES,
+                fontSize = 34.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
+            )
+
+            Spacer(modifier = Modifier.size(10.dp))
+
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(190.dp),
-                pageSpacing = (-30).dp,
-                contentPadding = PaddingValues(horizontal = 40.dp)
+                    .height(350.dp),
+                pageSpacing = 0.dp,
+                contentPadding = PaddingValues(horizontal = 92.dp)
             ) { page ->
-                val selectedPage = featuredMoviesList[page]
+                val selectedPage = moviesList?.get(page)
+
                 Box(modifier = Modifier
                     .carouselTransition(page, pagerState)
-                    .width(320.dp)
-                    .height(154.dp)
+                    .width(220.dp)
+                    .height(320.dp)
                 ) {
-                    CarouselCustomItem(
-                        title = selectedPage.title,
-                        release = selectedPage.release,
-                        image = selectedPage.image
-                    )
+                    if (selectedPage != null) {
+                        CarouselCustomItem(
+                            release = selectedPage.releaseDate,
+                            apiPosterPath = selectedPage.posterPath
+                        )
+                    }
                 }
             }
+
+            Spacer(modifier = Modifier.size(10.dp))
+
             DotIndicators(
-                pageCount = moviesListCarouselMock.size,
+                pageCount = moviesList?.size ?: 0,
                 pagerState = pagerState,
                 modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
             )
@@ -266,38 +287,38 @@ fun FeaturedMoviesCarousel(
 
 @Composable
 fun CarouselCustomItem(
-    title: String,
     release: String,
-    image: Int
+    apiPosterPath: String
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.DarkGray),
-        contentAlignment = Alignment.BottomStart
+            .background(Color.Black)
     ) {
         Image(
-            painter = painterResource(id = image),
+            painter = rememberImagePainter(data = "${NetworkConstants.POSTER_BASE_URL}${apiPosterPath}"),
             contentDescription = CarouselItemStrings.MOVIE_IMAGE,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxHeight(0.92f)
+                .fillMaxWidth()
         )
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .align(Alignment.BottomCenter)
+                .padding(6.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = title,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
-            )
             CompositionLocalProvider(LocalContentColor provides Color.LightGray) {
                 Text(
-                    text = release,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
+                    text = "${CarouselItemStrings.RELEASE_DATE}${release.formatReleaseDate()}",
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Medium,
+                    lineHeight = 10.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
@@ -306,9 +327,11 @@ fun CarouselCustomItem(
 
 @Composable
 fun AutoScrollLogic(
+    viewModel: HomeScreenViewModel,
     pagerState: PagerState,
     autoScrollDuration: Long
 ) {
+    val moviesList by viewModel.featuredMoviesList.observeAsState()
     val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
 
     if (isDragged.not()) {
@@ -321,16 +344,17 @@ fun AutoScrollLogic(
                     delay(timeMillis = autoScrollDuration)
 
                     if (isScrollingForward) {
-                        val nextPage = (currentPage + 1).mod(moviesListCarouselMock.size)
+                        val nextPage = (currentPage + 1).mod(moviesList?.size ?: 0)
                         animateScrollToPage(page = nextPage)
                         currentPageKey = nextPage
 
-                        if (nextPage == moviesListCarouselMock.size - 1) {
+                        if (nextPage == (moviesList?.size ?: 0) - 1) {
                             isScrollingForward = false
                         }
                     } else {
-                        val previousPage = (currentPage - 1 + moviesListCarouselMock.size).mod(
-                            moviesListCarouselMock.size)
+                        val previousPage = (currentPage - 1 + (moviesList?.size ?: 0)).mod(
+                            moviesList?.size ?: 0
+                        )
                         animateScrollToPage(page = previousPage)
                         currentPageKey = previousPage
 
@@ -375,8 +399,8 @@ fun DotIndicators(
             val color = if (pagerState.currentPage == iteration) selectedColor else unselectedColor
             Box(
                 modifier = Modifier
-                    .width(if (isSelected) 24.dp else 8.dp)
-                    .height(8.dp)
+                    .width(if (isSelected) 12.dp else 4.dp)
+                    .height(4.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(color)
                     .padding(horizontal = 4.dp)
@@ -677,7 +701,7 @@ fun HomeScreenPreview() {
             Spacer(modifier = Modifier.size(8.dp))
             SearchSection()
             Spacer(modifier = Modifier.size(30.dp))
-            FeaturedMoviesCarousel(featuredMoviesList = moviesListCarouselMock)
+            FeaturedMoviesCarousel(viewModel)
             Spacer(modifier = Modifier.size(30.dp))
             MovieCategoriesFilter(viewModel)
             Spacer(modifier = Modifier.size(30.dp))
