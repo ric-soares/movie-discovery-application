@@ -2,11 +2,12 @@ package com.example.moviediscoveryapplication.common.exceptions
 
 import retrofit2.HttpException
 
-sealed class NetworkExceptions(errorCode: Int, message: String) : Exception("error code: $errorCode -> message: $message") {
+sealed class NetworkExceptions(errorCode: Int?, message: String) : Exception("error code: $errorCode -> message: $message") {
 
     class ClientErrorException(errorCode: Int, message: String) : NetworkExceptions(errorCode, message)
     class ServerErrorException(errorCode: Int, message: String) : NetworkExceptions(errorCode, message)
     class OtherReasonException(errorCode: Int, message: String) : NetworkExceptions(errorCode, message)
+    class NoConnectivityException(message: String) : NetworkExceptions(null, message)
 
     companion object {
         fun fromHttpException(error: HttpException): NetworkExceptions {
@@ -41,6 +42,10 @@ sealed class NetworkExceptions(errorCode: Int, message: String) : Exception("err
 
         private fun handleOtherReasonError(errorCode: Int): NetworkExceptions {
             return OtherReasonException(errorCode, "Other Error")
+        }
+
+        fun noConnectivityException(): NetworkExceptions {
+            return NoConnectivityException("No internet connection available")
         }
 
     }
