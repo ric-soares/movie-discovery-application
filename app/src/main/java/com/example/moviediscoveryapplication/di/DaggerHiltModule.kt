@@ -6,6 +6,7 @@ import com.example.moviediscoveryapplication.network.ConnectivityInterceptor
 import com.example.moviediscoveryapplication.network.LoggingInterceptor
 import com.example.moviediscoveryapplication.network.ModifyUrlInterceptor
 import com.example.moviediscoveryapplication.network.ApiClient
+import com.example.moviediscoveryapplication.network.CacheInterceptor
 import com.example.moviediscoveryapplication.network.TheMovieDbService
 import com.example.moviediscoveryapplication.repository.TheMovieDbRepository
 import com.example.moviediscoveryapplication.repository.TheMovieDbRepositoryImpl
@@ -42,6 +43,13 @@ object AppModule {
     fun provideLoggingInterceptor(): LoggingInterceptor {
         return LoggingInterceptor()
     }
+
+    @Provides
+    @Singleton
+    fun provideCacheInterceptor(): CacheInterceptor {
+        return CacheInterceptor()
+    }
+
     @Provides
     @Singleton
     fun provideTheMovieDbService(apiClient: ApiClient): TheMovieDbService {
