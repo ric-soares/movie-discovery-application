@@ -23,7 +23,7 @@ fun BottomNavGraph(navController: NavHostController) {
             LikedMoviesScreen(navController)
         }
         composable(route = BottomBarScreen.Profile.route) {
-            ProfileScreen()
+            ProfileScreen(navController)
         }
     }
 }
